@@ -1,6 +1,6 @@
 
 package service;
-
+import dao.ProjetoCSV;
 import java.util.ArrayList;
 import java.util.List;
 import model.Projeto;
@@ -13,20 +13,19 @@ public class ProjetoService {
         projetos = new ArrayList<>();
     }
 
-    public void adicionar(Projeto projeto) {
-        if (projeto.getNome() == null || projeto.getNome().trim().isEmpty()) {
-            System.out.println("O nome do projeto não pode ser vazio.");
-            return;
-        }
-
-        if (buscarPorId(projeto.getId()) != null) {
-            System.out.println("Já existe um projeto com esse ID.");
-            return;
-        }
-
-        projetos.add(projeto);
+public boolean adicionar(Projeto projeto) {
+    if (projeto.getNome() == null ||
+        projeto.getNome().isBlank()) {
+        return false;
     }
 
+    if (buscarPorId(projeto.getId()) != null) {
+        return false;
+    }
+
+    projetos.add(projeto);
+    return true;
+}
     public List<Projeto> listar() {
         return projetos;
     }
@@ -74,4 +73,27 @@ public class ProjetoService {
 
         return false;
     }
+    public boolean alterar(Projeto projetoAtualizado) {
+    Projeto projeto = buscarPorId(projetoAtualizado.getId());
+
+    if (projeto == null) {
+        return false;
+    }
+
+    projeto.setNome(projetoAtualizado.getNome());
+    projeto.setDescricao(projetoAtualizado.getDescricao());
+    projeto.setCategoria(projetoAtualizado.getCategoria());
+    projeto.setStatus(projetoAtualizado.getStatus());
+
+    return true;
+}
+
+    public void carregar() {
+        projetos = ProjetoCSV.carregar();
+    }
+
+    public void salvar() {
+        ProjetoCSV.salvar(projetos);
+    }
+
 }

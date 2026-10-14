@@ -1,69 +1,158 @@
 
+import java.util.List;
+import java.util.Scanner;
 import model.Projeto;
 import service.ProjetoService;
 
 public class Main {
 
     public static void main(String[] args) {
-
+        Scanner scanner = new Scanner(System.in);
         ProjetoService service = new ProjetoService();
 
-        Projeto p1 = new Projeto(1, "Site pessoal",
-                "Portfólio profissional", "Web", "Em andamento");
+        service.carregar();
 
-        Projeto p2 = new Projeto(2, "Sistema de estoque",
-                "Controle de produtos", "Java", "Concluído");
+        int opcao;
 
-        Projeto p3 = new Projeto(3, "Aplicativo Iris",
-                "Aplicativo de segurança", "Mobile", "Em andamento");
+        do {
+            System.out.println("\n=== SISTEMA DE PROJETOS ===");
+            System.out.println("1 - Cadastrar projeto");
+            System.out.println("2 - Listar projetos");
+            System.out.println("3 - Buscar projeto por ID");
+            System.out.println("4 - Alterar projeto");
+            System.out.println("5 - Remover projeto");
+            System.out.println("0 - Sair");
+            System.out.print("Escolha uma opção: ");
 
-        service.adicionar(p1);
-        service.adicionar(p2);
-        service.adicionar(p3);
+            while (!scanner.hasNextInt()) {
+                System.out.println("Digite um número válido.");
+                scanner.next();
+                System.out.print("Escolha uma opção: ");
+            }
 
-        // Teste de ID duplicado
-        Projeto p4 = new Projeto(1, "Projeto duplicado",
-                "Teste", "Web", "Pendente");
-        service.adicionar(p4);
+            opcao = scanner.nextInt();
+            scanner.nextLine();
 
-        // Teste de nome vazio
-        Projeto p5 = new Projeto(4, " ",
-                "Teste", "Java", "Pendente");
-        service.adicionar(p5);
-        
-        System.out.println("=== TODOS OS PROJETOS ===");
-        for (Projeto projeto : service.listar()) {
-            projeto.exibirDados();
-            System.out.println();
-        }
+            switch (opcao) {
+                case 1:
+                    System.out.print("ID: ");
+                    int id = scanner.nextInt();
+                    scanner.nextLine();
 
-        System.out.println("=== BUSCAR POR ID ===");
-        Projeto encontrado = service.buscarPorId(2);
+                    System.out.print("Nome: ");
+                    String nome = scanner.nextLine();
 
-        if (encontrado != null) {
-            encontrado.exibirDados();
-        }
+                    System.out.print("Descrição: ");
+                    String descricao = scanner.nextLine();
 
-        System.out.println("\n=== BUSCAR POR CATEGORIA ===");
-        for (Projeto projeto : service.buscarPorCategoria("Web")) {
-            projeto.exibirDados();
-        }
+                    System.out.print("Categoria: ");
+                    String categoria = scanner.nextLine();
 
-        System.out.println("\n=== BUSCAR POR STATUS ===");
-        for (Projeto projeto : service.buscarPorStatus("Em andamento")) {
-            projeto.exibirDados();
-        }
+                    System.out.print("Status: ");
+                    String status = scanner.nextLine();
 
-        System.out.println("\n=== REMOVER PROJETO ===");
-        System.out.println(service.removerPorId(3)
-                ? "Projeto removido."
-                : "Projeto não encontrado.");
+                    Projeto novoProjeto = new Projeto(
+                        id, nome, descricao, categoria, status
+                    );
 
-        System.out.println("\n=== LISTA ATUALIZADA ===");
-        for (Projeto projeto : service.listar()) {
-            projeto.exibirDados();
-            System.out.println();
-        }
+                    if (service.adicionar(novoProjeto)) {
+                        service.salvar();
+                        System.out.println("Projeto cadastrado com sucesso!");
+                    } else {
+                        System.out.println(
+                            "Não foi possível cadastrar. Verifique o nome e o ID."
+                        );
+                    }
+                    break;
+
+                case 2:
+                    List<Projeto> projetos = service.listar();
+
+                    if (projetos.isEmpty()) {
+                        System.out.println("Nenhum projeto cadastrado.");
+                    } else {
+                        for (Projeto projeto : projetos) {
+                            System.out.println();
+                            projeto.exibirDados();
+                        }
+                    }
+                    break;
+
+                case 3:
+                    System.out.print("Digite o ID do projeto: ");
+                    int idBusca = scanner.nextInt();
+                    scanner.nextLine();
+
+                    Projeto encontrado = service.buscarPorId(idBusca);
+
+                    if (encontrado != null) {
+                        encontrado.exibirDados();
+                    } else {
+                        System.out.println("Projeto não encontrado.");
+                    }
+                    break;
+
+                case 4:
+                    System.out.print("ID do projeto que deseja alterar: ");
+                    int idAlterar = scanner.nextInt();
+                    scanner.nextLine();
+
+                    Projeto existente = service.buscarPorId(idAlterar);
+
+                    if (existente == null) {
+                        System.out.println("Projeto não encontrado.");
+                        break;
+                    }
+
+                    System.out.print("Novo nome: ");
+                    String novoNome = scanner.nextLine();
+
+                    System.out.print("Nova descrição: ");
+                    String novaDescricao = scanner.nextLine();
+
+                    System.out.print("Nova categoria: ");
+                    String novaCategoria = scanner.nextLine();
+
+                    System.out.print("Novo status: ");
+                    String novoStatus = scanner.nextLine();
+
+                    Projeto atualizado = new Projeto(
+                        idAlterar, novoNome, novaDescricao,
+                        novaCategoria, novoStatus
+                    );
+
+                    if (service.alterar(atualizado)) {
+                        service.salvar();
+                        System.out.println("Projeto alterado com sucesso!");
+                    } else {
+                        System.out.println("Não foi possível alterar o projeto.");
+                    }
+                    break;
+
+                case 5:
+                    System.out.print("ID do projeto que deseja remover: ");
+                    int idRemover = scanner.nextInt();
+                    scanner.nextLine();
+
+                    if (service.removerPorId(idRemover)) {
+                        service.salvar();
+                        System.out.println("Projeto removido com sucesso!");
+                    } else {
+                        System.out.println("Projeto não encontrado.");
+                    }
+                    break;
+
+                case 0:
+                    System.out.println("Saindo do sistema...");
+                    break;
+
+                default:
+                    System.out.println("Opção inválida.");
+            }
+
+        } while (opcao != 0);
+
+        scanner.close();
     }
 }
 
