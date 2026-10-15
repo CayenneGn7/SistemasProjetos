@@ -1,8 +1,10 @@
 
 package service;
-import dao.ProjetoCSV;
+
 import java.util.ArrayList;
 import java.util.List;
+
+import dao.ProjetoCSV;
 import model.Projeto;
 
 public class ProjetoService {
@@ -11,21 +13,23 @@ public class ProjetoService {
 
     public ProjetoService() {
         projetos = new ArrayList<>();
+        carregar();
     }
 
-public boolean adicionar(Projeto projeto) {
-    if (projeto.getNome() == null ||
-        projeto.getNome().isBlank()) {
-        return false;
+    public boolean adicionar(Projeto projeto) {
+        if (projeto.getNome() == null ||
+            projeto.getNome().isBlank()) {
+            return false;
+        }
+
+        if (buscarPorId(projeto.getId()) != null) {
+            return false;
+        }
+
+        projetos.add(projeto);
+        return true;
     }
 
-    if (buscarPorId(projeto.getId()) != null) {
-        return false;
-    }
-
-    projetos.add(projeto);
-    return true;
-}
     public List<Projeto> listar() {
         return projetos;
     }
@@ -36,6 +40,7 @@ public boolean adicionar(Projeto projeto) {
                 return projeto;
             }
         }
+
         return null;
     }
 
@@ -73,20 +78,21 @@ public boolean adicionar(Projeto projeto) {
 
         return false;
     }
+
     public boolean alterar(Projeto projetoAtualizado) {
-    Projeto projeto = buscarPorId(projetoAtualizado.getId());
+        Projeto projeto = buscarPorId(projetoAtualizado.getId());
 
-    if (projeto == null) {
-        return false;
+        if (projeto == null) {
+            return false;
+        }
+
+        projeto.setNome(projetoAtualizado.getNome());
+        projeto.setDescricao(projetoAtualizado.getDescricao());
+        projeto.setCategoria(projetoAtualizado.getCategoria());
+        projeto.setStatus(projetoAtualizado.getStatus());
+
+        return true;
     }
-
-    projeto.setNome(projetoAtualizado.getNome());
-    projeto.setDescricao(projetoAtualizado.getDescricao());
-    projeto.setCategoria(projetoAtualizado.getCategoria());
-    projeto.setStatus(projetoAtualizado.getStatus());
-
-    return true;
-}
 
     public void carregar() {
         projetos = ProjetoCSV.carregar();
@@ -95,5 +101,4 @@ public boolean adicionar(Projeto projeto) {
     public void salvar() {
         ProjetoCSV.salvar(projetos);
     }
-
 }

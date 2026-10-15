@@ -1,9 +1,15 @@
 
 package dao;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
 import model.Projeto;
 
 public class ProjetoCSV {
@@ -26,6 +32,8 @@ public class ProjetoCSV {
             while ((linha = leitor.readLine()) != null) {
                 String[] dados = linha.split(";", -1);
 
+                System.out.println("Campos encontrados: " + dados.length);
+
                 if (dados.length == 5) {
                     Projeto projeto = new Projeto(
                         Integer.parseInt(dados[0]),
@@ -36,6 +44,8 @@ public class ProjetoCSV {
                     );
 
                     projetos.add(projeto);
+
+                    System.out.println("Projeto carregado: " + projeto.getNome());
                 }
             }
 
