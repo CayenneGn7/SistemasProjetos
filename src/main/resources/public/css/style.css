@@ -1,0 +1,103 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    color: #252a34;
+}
+
+header {
+    background-color: #263b5a;
+    color: white;
+    padding: 30px 20px;
+    text-align: center;
+}
+
+header h1 {
+    margin: 0 0 10px;
+}
+
+header p {
+    margin: 0;
+}
+
+main {
+    width: 90%;
+    max-width: 900px;
+    margin: 30px auto;
+}
+
+section {
+    background-color: white;
+    padding: 25px;
+    margin-bottom: 25px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px #00000012;
+}
+
+h2 {
+    margin-top: 0;
+    color: #263b5a;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+input,
+textarea,
+select {
+    width: 100%;
+    padding: 11px;
+    border: 1px solid #ccd2da;
+    border-radius: 5px;
+    font: inherit;
+}
+
+textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+
+button {
+    padding: 12px;
+    border: none;
+    border-radius: 5px;
+    background-color: #315c91;
+    color: white;
+    font: inherit;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #24456e;
+}
+
+.projeto {
+    padding: 18px;
+    margin-bottom: 15px;
+    border: 1px solid #dce1e7;
+    border-radius: 8px;
+}
+
+.projeto h3 {
+    margin-top: 0;
+    color: #263b5a;
+}
+
+.projeto p {
+    overflow-wrap: anywhere;
+}
+
+.projeto button {
+    margin-top: 8px;
+}
+
+#mensagem {
+    margin-bottom: 0;
+}
