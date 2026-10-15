@@ -25,6 +25,16 @@ public class TelaPrincipal extends JFrame {
         painel.add(botaoCadastrar);
 
         add(painel);
+        
+        botaoCadastrar.addActionListener(e -> {
+            String nome = campoNome.getText();
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Projeto: " + nome
+            );
+        });
+
     }
 
     public static void main(String[] args) {
