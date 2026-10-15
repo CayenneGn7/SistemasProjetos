@@ -4,6 +4,9 @@ import javax.swing.*;
 public class TelaPrincipal extends JFrame {
 
     private JPanel painel;
+    private JLabel labelNome;
+    private JTextField campoNome;
+    private JButton botaoCadastrar;
 
     public TelaPrincipal() {
         setTitle("Sistema de Projetos");
@@ -12,6 +15,14 @@ public class TelaPrincipal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         painel = new JPanel();
+
+        labelNome = new JLabel("Nome:");
+        campoNome = new JTextField(30);
+        botaoCadastrar = new JButton("Cadastrar");
+
+        painel.add(labelNome);
+        painel.add(campoNome);
+        painel.add(botaoCadastrar);
 
         add(painel);
     }
