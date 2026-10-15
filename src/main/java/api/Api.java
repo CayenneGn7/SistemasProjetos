@@ -1,6 +1,4 @@
-
 package api;
-
 import java.util.List;
 
 import io.javalin.Javalin;
@@ -13,7 +11,7 @@ public class Api {
 
         ProjetoService service = new ProjetoService();
 
-        var app = Javalin.create(config -> {
+        var app = Javalin.create(config -> {config.staticFiles.add("/public");
 
             config.routes.get("/", ctx -> {
                 ctx.result("API Sistema de Projetos");
@@ -51,28 +49,24 @@ public class Api {
             config.routes.post("/api/projetos", ctx -> {
                 Projeto projeto = ctx.bodyAsClass(Projeto.class);
 
-                if (projeto.getNome() == null
-                        || projeto.getNome().isBlank()) {
+                if (!validarProjeto(projeto)) {
                     ctx.status(400);
-                    ctx.json(new ErrorResponse("O nome é obrigatório"));
+                    ctx.json(new ErrorResponse(
+                        "Nome, categoria e status são obrigatórios."
+                    ));
                     return;
                 }
 
-                if (projeto.getCategoria() == null
-                        || projeto.getCategoria().isBlank()) {
+                boolean adicionado = service.adicionar(projeto);
+
+                if (!adicionado) {
                     ctx.status(400);
-                    ctx.json(new ErrorResponse("A categoria é obrigatória"));
+                    ctx.json(new ErrorResponse(
+                        "Não foi possível cadastrar o projeto. Verifique o ID."
+                    ));
                     return;
                 }
 
-                if (projeto.getStatus() == null
-                        || projeto.getStatus().isBlank()) {
-                    ctx.status(400);
-                    ctx.json(new ErrorResponse("O status é obrigatório"));
-                    return;
-                }
-
-                service.adicionar(projeto);
                 service.salvar();
 
                 ctx.status(201);
@@ -93,6 +87,15 @@ public class Api {
                 }
 
                 Projeto projeto = ctx.bodyAsClass(Projeto.class);
+
+                if (!validarProjeto(projeto)) {
+                    ctx.status(400);
+                    ctx.json(new ErrorResponse(
+                        "Nome, categoria e status são obrigatórios."
+                    ));
+                    return;
+                }
+
                 projeto.setId(id);
 
                 boolean alterado = service.alterar(projeto);
@@ -136,6 +139,14 @@ public class Api {
 
         }).start(7071);
     }
+
+    private static boolean validarProjeto(Projeto projeto) {
+        return projeto != null
+            && projeto.getNome() != null
+            && !projeto.getNome().isBlank()
+            && projeto.getCategoria() != null
+            && !projeto.getCategoria().isBlank()
+            && projeto.getStatus() != null
+            && !projeto.getStatus().isBlank();
+    }
 }
-
-

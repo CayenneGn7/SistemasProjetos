@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Projetos</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="js/projetos.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Sistema de Projetos</h1>
+        <p>Gerencie seus projetos em um só lugar.</p>
+    </header>
+
+    <main>
+        <section>
+            <h2>Cadastrar projeto</h2>
+
+            <form id="formProjeto">
+                <label for="id">ID do projeto</label>
+                <input type="number" id="id" name="id" min="1" required>
+
+                <label for="nome">Nome</label>
+                <input type="text" id="nome" name="nome" required>
+
+                <label for="descricao">Descrição</label>
+                <textarea id="descricao" name="descricao"></textarea>
+
+                <label for="categoria">Categoria</label>
+                <select id="categoria" name="categoria" required>
+                    <option value="">Selecione</option>
+                    <option value="Software">Software</option>
+                    <option value="Hardware">Hardware</option>
+                    <option value="Outro">Outro</option>
+                </select>
+
+                <label for="status">Status</label>
+                <select id="status" name="status" required>
+                    <option value="">Selecione</option>
+                    <option value="Em desenvolvimento">Em desenvolvimento</option>
+                    <option value="Concluído">Concluído</option>
+                    <option value="Pendente">Pendente</option>
+                </select>
+
+                <button type="submit">Cadastrar projeto</button>
+            </form>
+
+            <p id="mensagem" role="status"></p>
+        </section>
+
+        <section>
+            <h2>Projetos cadastrados</h2>
+            <div id="listaProjetos"></div>
+        </section>
+    </main>
+</body>
+</html>

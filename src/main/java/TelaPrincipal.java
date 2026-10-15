@@ -1,9 +1,22 @@
 
-import java.awt.*;
-import javax.swing.*;
+import java.awt.BorderLayout;
+import java.util.List;
+
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+import javax.swing.SwingWorker;
 import javax.swing.table.DefaultTableModel;
+
+import client.ApiClient;
 import model.Projeto;
-import service.ProjetoService;
 
 public class TelaPrincipal extends JFrame {
 
@@ -18,7 +31,7 @@ public class TelaPrincipal extends JFrame {
     private JButton botaoExcluir;
     private JButton botaoAlterar;
 
-    private ProjetoService service;
+    private ApiClient apiClient;
     private int idProjetoEmEdicao = -1;
 
     public TelaPrincipal() {
@@ -27,8 +40,7 @@ public class TelaPrincipal extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        service = new ProjetoService();
-        service.carregar();
+        apiClient = new ApiClient();
 
         criarComponentes();
         criarEventos();
@@ -109,6 +121,7 @@ public class TelaPrincipal extends JFrame {
         comboCategoria.setSelectedIndex(0);
         comboStatus.setSelectedIndex(0);
         idProjetoEmEdicao = -1;
+        tabela.clearSelection();
         campoNome.requestFocus();
     }
 
@@ -148,26 +161,29 @@ public class TelaPrincipal extends JFrame {
             id, nome, descricao, categoria, status
         );
 
-        if (service.adicionar(projeto)) {
-            service.salvar();
+        try {
+            apiClient.cadastrarProjeto(projeto);
             carregarTabela();
             limparFormulario();
 
             JOptionPane.showMessageDialog(
                 this, "Projeto cadastrado com sucesso!"
             );
-        } else {
+        } catch (Exception ex) {
             JOptionPane.showMessageDialog(
                 this,
-                "Não foi possível cadastrar. Verifique o nome e se o ID já existe."
+                "Não foi possível cadastrar o projeto.\n"
+                    + ex.getMessage(),
+                "Erro",
+                JOptionPane.ERROR_MESSAGE
             );
         }
     }
 
-    private void carregarTabela() {
+    private void atualizarTabela(List<Projeto> projetos) {
         modelo.setRowCount(0);
 
-        for (Projeto projeto : service.listar()) {
+        for (Projeto projeto : projetos) {
             modelo.addRow(new Object[]{
                 projeto.getId(),
                 projeto.getNome(),
@@ -175,6 +191,31 @@ public class TelaPrincipal extends JFrame {
                 projeto.getStatus()
             });
         }
+    }
+
+    private void carregarTabela() {
+        new SwingWorker<List<Projeto>, Void>() {
+
+            @Override
+            protected List<Projeto> doInBackground() throws Exception {
+                return apiClient.listarProjetos();
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    atualizarTabela(get());
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(
+                        TelaPrincipal.this,
+                        "Não foi possível carregar os projetos.\n"
+                            + ex.getMessage(),
+                        "Erro de comunicação com a API",
+                        JOptionPane.ERROR_MESSAGE
+                    );
+                }
+            }
+        }.execute();
     }
 
     private void excluirSelecionado() {
@@ -196,20 +237,26 @@ public class TelaPrincipal extends JFrame {
             JOptionPane.YES_NO_OPTION
         );
 
-        if (confirmacao == JOptionPane.YES_OPTION) {
-            if (service.removerPorId(id)) {
-                service.salvar();
-                carregarTabela();
-                limparFormulario();
+        if (confirmacao != JOptionPane.YES_OPTION) {
+            return;
+        }
 
-                JOptionPane.showMessageDialog(
-                    this, "Projeto excluído com sucesso!"
-                );
-            } else {
-                JOptionPane.showMessageDialog(
-                    this, "Não foi possível excluir o projeto."
-                );
-            }
+        try {
+            apiClient.excluirProjeto(id);
+            carregarTabela();
+            limparFormulario();
+
+            JOptionPane.showMessageDialog(
+                this, "Projeto excluído com sucesso!"
+            );
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Não foi possível excluir o projeto.\n"
+                    + ex.getMessage(),
+                "Erro",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -223,13 +270,27 @@ public class TelaPrincipal extends JFrame {
         idProjetoEmEdicao =
             (int) modelo.getValueAt(linhaSelecionada, 0);
 
-        Projeto projeto = service.buscarPorId(idProjetoEmEdicao);
+        try {
+            Projeto projeto = apiClient.listarProjetos()
+                .stream()
+                .filter(p -> p.getId() == idProjetoEmEdicao)
+                .findFirst()
+                .orElse(null);
 
-        if (projeto != null) {
-            campoNome.setText(projeto.getNome());
-            campoDescricao.setText(projeto.getDescricao());
-            comboCategoria.setSelectedItem(projeto.getCategoria());
-            comboStatus.setSelectedItem(projeto.getStatus());
+            if (projeto != null) {
+                campoNome.setText(projeto.getNome());
+                campoDescricao.setText(projeto.getDescricao());
+                comboCategoria.setSelectedItem(projeto.getCategoria());
+                comboStatus.setSelectedItem(projeto.getStatus());
+            }
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Não foi possível carregar os dados do projeto.\n"
+                    + ex.getMessage(),
+                "Erro",
+                JOptionPane.ERROR_MESSAGE
+            );
         }
     }
 
@@ -261,17 +322,21 @@ public class TelaPrincipal extends JFrame {
             status
         );
 
-        if (service.alterar(projeto)) {
-            service.salvar();
+        try {
+            apiClient.atualizarProjeto(projeto);
             carregarTabela();
             limparFormulario();
 
             JOptionPane.showMessageDialog(
                 this, "Projeto alterado com sucesso!"
             );
-        } else {
+        } catch (Exception ex) {
             JOptionPane.showMessageDialog(
-                this, "Não foi possível alterar o projeto."
+                this,
+                "Não foi possível alterar o projeto.\n"
+                    + ex.getMessage(),
+                "Erro",
+                JOptionPane.ERROR_MESSAGE
             );
         }
     }
@@ -283,4 +348,3 @@ public class TelaPrincipal extends JFrame {
         });
     }
 }
-
