@@ -6,12 +6,20 @@ import service.ProjetoService;
 
 public class TelaPrincipal extends JFrame {
 
-    private JPanel painel;
-    private JLabel labelNome;
     private JTextField campoNome;
-    private JButton botaoCadastrar;
+    private JTextField campoDescricao;
+
+    private JComboBox<String> comboCategoria;
+    private JComboBox<String> comboStatus;
+
     private JTable tabela;
     private DefaultTableModel modelo;
+
+    private JButton botaoCadastrar;
+    private JButton botaoLimpar;
+    private JButton botaoExcluir;
+
+    private JPanel painelFormulario;
     private ProjetoService service;
 
     public TelaPrincipal() {
@@ -23,15 +31,29 @@ public class TelaPrincipal extends JFrame {
         service = new ProjetoService();
         service.carregar();
 
-        painel = new JPanel();
+        criarComponentes();
+        criarEventos();
+        carregarTabela();
+    }
 
-        labelNome = new JLabel("Nome:");
+    private void criarComponentes() {
         campoNome = new JTextField(20);
-        botaoCadastrar = new JButton("Cadastrar");
+        campoDescricao = new JTextField(20);
 
-        painel.add(labelNome);
-        painel.add(campoNome);
-        painel.add(botaoCadastrar);
+        comboCategoria = new JComboBox<>();
+        comboCategoria.addItem("Web");
+        comboCategoria.addItem("Software");
+        comboCategoria.addItem("Mobile");
+        comboCategoria.addItem("Outro");
+
+        comboStatus = new JComboBox<>();
+        comboStatus.addItem("Planejado");
+        comboStatus.addItem("Em desenvolvimento");
+        comboStatus.addItem("Concluído");
+
+        botaoCadastrar = new JButton("Cadastrar");
+        botaoLimpar = new JButton("Limpar");
+        botaoExcluir = new JButton("Excluir selecionado");
 
         modelo = new DefaultTableModel();
         modelo.addColumn("ID");
@@ -41,18 +63,54 @@ public class TelaPrincipal extends JFrame {
 
         tabela = new JTable(modelo);
 
-        setLayout(new BoxLayout(getContentPane(), BoxLayout.Y_AXIS));
+        painelFormulario = new JPanel();
 
-        add(painel);
+        painelFormulario.add(new JLabel("Nome:"));
+        painelFormulario.add(campoNome);
+
+        painelFormulario.add(new JLabel("Descrição:"));
+        painelFormulario.add(campoDescricao);
+
+        painelFormulario.add(new JLabel("Categoria:"));
+        painelFormulario.add(comboCategoria);
+
+        painelFormulario.add(new JLabel("Status:"));
+        painelFormulario.add(comboStatus);
+
+        painelFormulario.add(botaoCadastrar);
+        painelFormulario.add(botaoLimpar);
+        painelFormulario.add(botaoExcluir);
+
+        setLayout(new BoxLayout(
+            getContentPane(),
+            BoxLayout.Y_AXIS
+        ));
+
+        add(painelFormulario);
         add(new JScrollPane(tabela));
+    }
 
+    private void criarEventos() {
+        botaoLimpar.addActionListener(e -> limparFormulario());
         botaoCadastrar.addActionListener(e -> cadastrar());
+        botaoExcluir.addActionListener(e -> excluirSelecionado());
+    }
 
-        carregarTabela();
+    private void limparFormulario() {
+        campoNome.setText("");
+        campoDescricao.setText("");
+
+        comboCategoria.setSelectedIndex(0);
+        comboStatus.setSelectedIndex(0);
+
+        campoNome.requestFocus();
     }
 
     private void cadastrar() {
         String nome = campoNome.getText();
+        String descricao = campoDescricao.getText();
+        String categoria = comboCategoria.getSelectedItem().toString();
+        String status = comboStatus.getSelectedItem().toString();
 
         if (nome.isBlank()) {
             JOptionPane.showMessageDialog(
@@ -84,23 +142,66 @@ public class TelaPrincipal extends JFrame {
         }
 
         Projeto projeto = new Projeto(
-            id, nome, "", "Outro", "Planejado"
+            id,
+            nome,
+            descricao,
+            categoria,
+            status
         );
 
         if (service.adicionar(projeto)) {
             service.salvar();
             carregarTabela();
+            limparFormulario();
 
             JOptionPane.showMessageDialog(
                 this,
                 "Projeto cadastrado com sucesso!"
             );
-
-            campoNome.setText("");
         } else {
             JOptionPane.showMessageDialog(
                 this,
                 "Não foi possível cadastrar. Verifique o nome e o ID."
+            );
+        }
+    }
+
+    private void excluirSelecionado() {
+        int linhaSelecionada = tabela.getSelectedRow();
+
+        if (linhaSelecionada == -1) {
+            JOptionPane.showMessageDialog(
+                this,
+                "Selecione um projeto na tabela."
+            );
+            return;
+        }
+
+        int id = (int) modelo.getValueAt(linhaSelecionada, 0);
+
+        int confirmacao = JOptionPane.showConfirmDialog(
+            this,
+            "Deseja excluir o projeto selecionado?",
+            "Confirmar exclusão",
+            JOptionPane.YES_NO_OPTION
+        );
+
+        if (confirmacao != JOptionPane.YES_OPTION) {
+            return;
+        }
+
+        if (service.removerPorId(id)) {
+            service.salvar();
+            carregarTabela();
+
+            JOptionPane.showMessageDialog(
+                this,
+                "Projeto excluído com sucesso!"
+            );
+        } else {
+            JOptionPane.showMessageDialog(
+                this,
+                "Não foi possível excluir o projeto."
             );
         }
     }
